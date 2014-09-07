@@ -99,14 +99,33 @@ class smd:
                     copper_layer.add(svg_document.rect(insert = (left_margin + (p * pad_pitch), side_start),
                                        size = (pad_width, pad_length),
                                        stroke_width = "0",
-                                       stroke = "black",
-                                       fill = "rgb(0,0,0)"))
-       
+                                       # connectorname = '\"' + str(((s+1) * (total_pincount/sides))+p) + '\"',
+                                       fill = "#ffbf00"))
+        
         svg_document.add(copper_layer)
         
-        # print(svg_document.tostring())
-
+        # Write the file
         svg_document.save()
+        
+        # Rewrite the file adding in the connectors                   
+        import xml.dom.minidom
+        xmldoc = xml.dom.minidom.parse(footprint_name + ".svg")
+        pretty_xml_as_string = xmldoc.toprettyxml()
+        
+        doclist = pretty_xml_as_string.split('\n')
+        newdoc = ""
+        cnum = 1 
+        for l in doclist:
+            if "#ffbf00" in l:
+                print "Found"
+                l = l.replace("<rect fill=\"#ffbf00\"","<rect fill=\"#ffbf00\" connector=\"%d\" id=\"connector%dpin\"" % (cnum,cnum))
+                cnum += 1
+                
+            newdoc = newdoc + l + '\n'
+            
+        f = open(footprint_name + ".svg", 'w')
+        f.write(newdoc)
+        
 
 if __name__ == "__main__":
 
